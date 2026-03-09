@@ -8,7 +8,7 @@ rf = Roboflow(api_key="Rj2YqGsFTUbqH8zvjt89")
 project = rf.project("quakesafe-fddoq")
 model = project.version(5).model 
 
-st.title("🛡️ QuakeSafe: Earthquake Hazard Detector")
+st.title("🚨 QuakeSafe: Earthquake Hazard Detector")
 
 uploaded_file = st.file_uploader("Upload a room photo", type=['jpg', 'jpeg', 'png'])
 
@@ -82,4 +82,5 @@ if uploaded_file:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
     st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
+
 
