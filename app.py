@@ -1,6 +1,8 @@
 import streamlit as st
 from roboflow import Roboflow
 
+st.set_page_config(page_title="QuakeSafe AI", page_icon="🚨")
+
 # Setup
 rf = Roboflow(api_key="Rj2YqGsFTUbqH8zvjt89") 
 project = rf.project("quakesafe-fddoq")
@@ -80,3 +82,4 @@ if uploaded_file:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
     st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
+
