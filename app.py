@@ -1,16 +1,17 @@
 import streamlit as st
 from roboflow import Roboflow
 
-st.set_page_config(page_title="QuakeSafe AI", page_icon="🚨")
+# --- CONFIGURATION ---
+st.set_page_config(page_title="QuakeSafe AI", page_icon="🛡️")
 
-# Setup
+# Setup Roboflow
 rf = Roboflow(api_key="Rj2YqGsFTUbqH8zvjt89") 
 project = rf.project("quakesafe-fddoq")
 model = project.version(5).model 
 
-st.title("🚨 QuakeSafe: Earthquake Hazard Detector")
+st.title("🛡️ QuakeSafe: Earthquake Hazard Detector")
 
-uploaded_file = st.file_uploader("Upload a room photo", type=['jpg', 'jpeg', 'png'])
+uploaded_file = st.file_uploader("Upload a room photo for safety analysis", type=['jpg', 'jpeg', 'png'])
 
 if uploaded_file:
     with open("temp.jpg", "wb") as f:
@@ -19,7 +20,7 @@ if uploaded_file:
     results = model.predict("temp.jpg", confidence=25).json()
     st.image("temp.jpg", use_container_width=True)
 
-    # 1. DEFINE POINT VALUES (From Table 1)
+    # 1. DEFINE POINT VALUES
     hazard_values = {
         "Blocked exits or pathways": 5,
         "Exposed electrical wires": 5,
@@ -30,46 +31,50 @@ if uploaded_file:
         "Sharp edges from furniture": 2
     }
 
-    # 2. CALCULATE MAX POTENTIAL SCORE
-    # This is the sum of all possible hazards (Total = 24)
-    max_possible_score = sum(hazard_values.values()) 
-
-    # 3. CALCULATE ACTUAL SCORE
+    # 2. INITIALIZE SCORING
     actual_score = 0
-    detected_classes = set() # To avoid double-counting the same type of hazard
+    detected_classes = set()
 
     for p in results['predictions']:
         hazard_name = p['class']
         if hazard_name in hazard_values:
-            # We add the score only once per category for the percentage
             if hazard_name not in detected_classes:
                 actual_score += hazard_values[hazard_name]
                 detected_classes.add(hazard_name)
 
-   # 4. CALCULATE NORMALIZED RISK PERCENTAGE
+    # 3. CALCULATE NORMALIZED CATEGORY RISK (NCR)
     if detected_classes:
-        # Each category detected has a potential max of 5 points
+        # Each detected category has a max potential of 5 points
         dynamic_max_potential = len(detected_classes) * 5 
-        
-        # Calculate percentage based on your 15-point example logic
         risk_percentage = (actual_score / dynamic_max_potential) * 100
     else:
         risk_percentage = 0.0
         dynamic_max_potential = 0
 
-    # 5. DISPLAY DYNAMIC RESULTS
+    # 4. DISPLAY RESULTS & HAZARD DETAILS
     st.markdown("---")
     st.subheader(f"Risk Analysis: {risk_percentage:.1f}%")
     st.progress(risk_percentage / 100) 
     
-    if dynamic_max_potential > 0:
+    if detected_classes:
         st.write(f"**Score Interpretation:** The AI found {len(detected_classes)} types of hazards.")
         st.write(f"Total Points: **{actual_score}** out of a possible **{dynamic_max_potential}** for these categories.")
+        
+        st.subheader("📝 Detected Hazard Details")
+        for hazard in detected_classes:
+            points = hazard_values[hazard]
+            # Restoration of the specific hazard boxes
+            if points == 5:
+                st.error(f"⚠️ **{hazard}** (High Severity: +{points}/5 pts)")
+            elif points == 4:
+                st.warning(f"📦 **{hazard}** (Medium Severity: +{points}/5 pts)")
+            else:
+                st.info(f"🔍 **{hazard}** (Low Severity: +{points}/5 pts)")
+    else:
+        st.success("✅ No hazards identified in the uploaded image.")
 
-    # 6. DISPLAY RESULTS
-    st.subheader(f"Risk Analysis: {risk_percentage:.1f}%")
-    st.progress(risk_percentage / 100) # Visual loading bar
-
+    # 5. FINAL STATUS ALERT
+    st.markdown("---")
     if risk_percentage >= 60:
         st.error(f"🔴 HIGH RISK ({risk_percentage:.1f}%). Multiple severe hazards detected.")
     elif 30 <= risk_percentage < 60:
@@ -77,7 +82,4 @@ if uploaded_file:
     else:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
-    st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
-
-
-
+    st.caption(f"Detected {len(detected_classes)} out of 7 possible hazard categories.")
