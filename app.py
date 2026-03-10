@@ -46,29 +46,25 @@ if uploaded_file:
                 actual_score += hazard_values[hazard_name]
                 detected_classes.add(hazard_name)
 
-    # 4. CALCULATE RISK PERCENTAGE
-    risk_percentage = (actual_score / max_possible_score) * 100
-
-# 5. DETAILED HAZARD LIST
-    st.markdown("---")
-    st.subheader("📝 Detected Hazard Details")
-    
+   # 4. CALCULATE NORMALIZED RISK PERCENTAGE
     if detected_classes:
-        # We create a nice list showing exactly what the AI found
-        for hazard in detected_classes:
-            points = hazard_values[hazard]
-            
-            # Using different icons to make it look professional
-            if points == 5:
-                st.error(f"⚠️ **{hazard}** (High Severity: +5 pts)")
-            elif points == 4:
-                st.warning(f"📦 **{hazard}** (Medium Severity: +4 pts)")
-            else:
-                st.info(f"🔍 **{hazard}** (Low Severity: +{points} pts)")
-                
-        st.caption(f"Detected {len(detected_classes)} out of 7 possible hazard categories.")
+        # Each category detected has a potential max of 5 points
+        dynamic_max_potential = len(detected_classes) * 5 
+        
+        # Calculate percentage based on your 15-point example logic
+        risk_percentage = (actual_score / dynamic_max_potential) * 100
     else:
-        st.success("✅ No specific hazards identified from the 7 monitored categories.")
+        risk_percentage = 0.0
+        dynamic_max_potential = 0
+
+    # 5. DISPLAY DYNAMIC RESULTS
+    st.markdown("---")
+    st.subheader(f"Risk Analysis: {risk_percentage:.1f}%")
+    st.progress(risk_percentage / 100) 
+    
+    if dynamic_max_potential > 0:
+        st.write(f"**Score Interpretation:** The AI found {len(detected_classes)} types of hazards.")
+        st.write(f"Total Points: **{actual_score}** out of a possible **{dynamic_max_potential}** for these categories.")
 
     # 6. DISPLAY RESULTS
     st.subheader(f"Risk Analysis: {risk_percentage:.1f}%")
@@ -82,5 +78,6 @@ if uploaded_file:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
     st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
+
 
 
