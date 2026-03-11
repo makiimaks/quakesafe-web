@@ -7,7 +7,7 @@ st.set_page_config(page_title="QuakeSafe AI", page_icon="🚨")
 # Setup Roboflow
 rf = Roboflow(api_key="Rj2YqGsFTUbqH8zvjt89") 
 project = rf.project("quakesafe-fddoq")
-model = project.version(5).model 
+model = project.version(7).model 
 
 st.title("🚨 QuakeSafe: Earthquake Hazard Detector")
 
@@ -17,7 +17,7 @@ if uploaded_file:
     with open("temp.jpg", "wb") as f:
         f.write(uploaded_file.getbuffer())
     
-    results = model.predict("temp.jpg", confidence=10).json()
+    results = model.predict("temp.jpg", confidence=15).json()
     st.image("temp.jpg", use_container_width=True)
 
     # 1. POINT VALUES
@@ -81,6 +81,7 @@ if uploaded_file:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
     st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
+
 
 
 
