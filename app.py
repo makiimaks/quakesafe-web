@@ -17,7 +17,7 @@ if uploaded_file:
     with open("temp.jpg", "wb") as f:
         f.write(uploaded_file.getbuffer())
     
-    results = model.predict("temp.jpg", confidence=35).json()
+    results = model.predict("temp.jpg", confidence=30).json()
     st.image("temp.jpg", use_container_width=True)
 
     # 1. POINT VALUES
@@ -81,6 +81,7 @@ if uploaded_file:
         st.success(f"🟢 LOW RISK ({risk_percentage:.1f}%). Room is relatively safe.")
     
     st.write(f"Detected {len(detected_classes)} out of 7 hazard categories.")
+
 
 
 
